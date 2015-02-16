@@ -30,7 +30,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 					"Invalid object type: #{type.inspect}"
 		end
 
-		execute(gen.generate)
+		run(gen.generate)
 	end
 
 	# Retrieve the comment for a database object.
@@ -115,7 +115,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 				sql_gen.table_name = name
 			end
 
-			execute(sql_gen.generate)
+			run(sql_gen.generate)
 		end
 	end
 
@@ -143,7 +143,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 				sql_gen.table_name = name
 			end
 
-			execute(sql_gen.generate)
+			run(sql_gen.generate)
 		end
 	end
 
