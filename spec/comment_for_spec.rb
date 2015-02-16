@@ -9,26 +9,27 @@ describe "#comment_for" do
 	it "gets a table comment" do
 		db.comment_for(:foo)
 		expect(db.sqls).
-		  to eq(["SELECT obj_description('foo'::regclass, 'pg_class')"])
+		  to eq([%{SELECT obj_description(CAST('foo' AS regclass), 'pg_class') } +
+		           %{AS \"comment\" LIMIT 1}])
 	end
 
 	it "gets a column comment" do
 		db.comment_for(:foo__column)
 		expect(db.sqls).
-		  to eq(["SELECT col_description(c.oid, a.attnum) " +
-		          "FROM pg_class c " +
-		          "JOIN pg_attribute a ON (c.oid=a.attrelid) " +
-		          "WHERE c.relname='foo' AND a.attname='column'"
+		  to eq([%{SELECT col_description("c"."oid", "a"."attnum") AS "comment" } +
+		           %{FROM "pg_class" AS "c" } +
+		           %{INNER JOIN "pg_attribute" AS "a" ON ("c"."oid" = "a"."attrelid") } +
+		           %{WHERE (("c"."relname" = 'foo') AND ("a"."attname" = 'column')) LIMIT 1}
 		       ])
 	end
 
 	it "gets a column comment via the dataset" do
 		db[:foo].comment_for(:column)
 		expect(db.sqls).
-		  to eq(["SELECT col_description(c.oid, a.attnum) " +
-		          "FROM pg_class c " +
-		          "JOIN pg_attribute a ON (c.oid=a.attrelid) " +
-		          "WHERE c.relname='foo' AND a.attname='column'"
+		  to eq([%{SELECT col_description("c"."oid", "a"."attnum") AS "comment" } +
+		           %{FROM "pg_class" AS "c" } +
+		           %{INNER JOIN "pg_attribute" AS "a" ON ("c"."oid" = "a"."attrelid") } +
+		           %{WHERE (("c"."relname" = 'foo') AND ("a"."attname" = 'column')) LIMIT 1}
 		       ])
 	end
 end

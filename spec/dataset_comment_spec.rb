@@ -7,12 +7,14 @@ describe "Dataset#comment" do
 	it "gets the comment for the table" do
 		db[:foo].comment
 		expect(db.sqls).
-		  to eq(["SELECT obj_description('foo'::regclass, 'pg_class')"])
+		  to eq([%{SELECT obj_description(CAST('foo' AS regclass), 'pg_class') } +
+		           %{AS "comment" LIMIT 1}])
 	end
 
 	it "gets the comment for the first table" do
 		db[:foo].join(:bar, :id => :bar_id).where { foo__id < 20 }.comment
 		expect(db.sqls).
-		  to eq(["SELECT obj_description('foo'::regclass, 'pg_class')"])
+		  to eq([%{SELECT obj_description(CAST('foo' AS regclass), 'pg_class') } +
+		           %{AS "comment" LIMIT 1}])
 	end
 end

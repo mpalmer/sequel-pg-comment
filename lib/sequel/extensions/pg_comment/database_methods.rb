@@ -50,14 +50,19 @@ module Sequel::Postgres::Comment::DatabaseMethods
 		if object.index("__")
 			tbl, col = object.split("__", 2)
 
-			execute("SELECT col_description(c.oid, a.attnum) " +
-					  "FROM pg_class c JOIN pg_attribute a " +
-					  "ON (c.oid=a.attrelid) " +
-					  "WHERE c.relname=#{literal(tbl)} " +
-					  "AND a.attname=#{literal(col)}"
-					 )
+			(select(Sequel.function(:col_description, :c__oid, :a__attnum).as(:comment)).
+			   from(Sequel.as(:pg_class, :c)).
+			   join(Sequel.as(:pg_attribute, :a), :c__oid => :a__attrelid).
+			   where(:c__relname => tbl).
+			   and(:a__attname => col).first || {})[:comment]
 		else
-			execute("SELECT obj_description(#{literal(object.to_s)}::regclass, 'pg_class')")
+			(select(
+			   Sequel.function(
+			     :obj_description,
+			     Sequel.cast(object, :regclass),
+			     "pg_class"
+			   ).as(:comment)
+			 ).first || {})[:comment]
 		end
 	end
 
