@@ -19,4 +19,19 @@ module Sequel::Postgres::Comment::DatasetMethods
 	def comment_for(col)
 		db.comment_for("#{first_source_table}__#{col}")
 	end
+
+	# Retrieve the comment for the "primary" table in the dataset.
+	#
+	# @return [String, NilClass] The comment for the table, or `nil` if there
+	#   is no comment defined.
+	#
+	# @example Simple, single-table dataset
+	#   db[:foo].comment  # => comment for table foo
+	#
+	# @example Multi-table dataset
+	#   db[:foo].join(:bar, ...).where { id < 20 }.comment  # => comment for table foo
+	#
+	def comment
+		db.comment_for(first_source_table)
+	end
 end
