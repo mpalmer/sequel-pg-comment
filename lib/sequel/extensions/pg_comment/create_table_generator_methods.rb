@@ -3,7 +3,7 @@
 # block-form `create_table` method, to support setting comments via the
 # `:comment` option.
 #
-module Sequel::Extension::PgComment::CreateTableGeneratorMethods
+module Sequel::Postgres::Comment::CreateTableGeneratorMethods
 	# An array of all the comments that this generator has seen fit to
 	# create.
 	#
@@ -11,7 +11,7 @@ module Sequel::Extension::PgComment::CreateTableGeneratorMethods
 	#
 	attr_reader :comments
 
-	include Sequel::Extension::PgComment
+	include Sequel::Postgres::Comment
 
 	# Enhanced version of the `column` table definition method, which
 	# supports setting a comment on the column.

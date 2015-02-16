@@ -6,7 +6,7 @@
 # Will retrieve the comment for `foo_tbl.some_column`, if such a
 # column exists.
 #
-module Sequel::Extension::PgComment::DatasetMethods
+module Sequel::Postgres::Comment::DatasetMethods
 	# Retrieve the comment for the column named `col` in the "primary" table
 	# for this dataset.
 	#

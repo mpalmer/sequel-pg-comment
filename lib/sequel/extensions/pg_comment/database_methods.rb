@@ -1,14 +1,14 @@
 # Support for setting and retrieving comments on all object types
 # in a PostgreSQL database.
 #
-module Sequel::Extension::PgComment::DatabaseMethods
+module Sequel::Postgres::Comment::DatabaseMethods
 	# Set the comment for a database object.
 	#
 	# @param type [#to_s] The type of object that you wish to comment on.
 	#   This can either be a string or symbol.  Any object type that PgSQL
 	#   knows about should be fair game.  The current list of object types
 	#   that this plugin knows about (and hence will accept) is listed in
-	#   the {Sequel::Extension::PgComment::OBJECT_TYPES} array.
+	#   the {Sequel::Postgres::Comment::OBJECT_TYPES} array.
 	#
 	# @param id [#to_s] The name of the object that you wish to comment on.
 	#   For most types of object, this should be the literal name of the
@@ -19,12 +19,12 @@ module Sequel::Extension::PgComment::DatabaseMethods
 	# @param comment [String] The comment you wish to set for the database
 	#   object.
 	#
-	# @see {Sequel::Extension::PgComment.normalise_comment} for details on
+	# @see {Sequel::Postgres::Comment.normalise_comment} for details on
 	#   how the comment string is interpreted.
 	#
 	def comment_on(type, id, comment)
 		gen = begin
-			Sequel::Extension::PgComment::SqlGenerator.create(type, id, comment)
+			Sequel::Postgres::Comment::SqlGenerator.create(type, id, comment)
 		rescue ArgumentError
 			raise ArgumentError,
 					"Invalid object type: #{type.inspect}"
@@ -83,7 +83,7 @@ module Sequel::Extension::PgComment::DatabaseMethods
 	#
 	def create_table_generator(&block)
 		super do
-			extend Sequel::Extension::PgComment::CreateTableGeneratorMethods
+			extend Sequel::Postgres::Comment::CreateTableGeneratorMethods
 			@comments = []
 			instance_eval(&block) if block
 		end
@@ -120,7 +120,7 @@ module Sequel::Extension::PgComment::DatabaseMethods
 	#
 	def alter_table_generator(&block)
 		super do
-			extend Sequel::Extension::PgComment::AlterTableGeneratorMethods
+			extend Sequel::Postgres::Comment::AlterTableGeneratorMethods
 			@comments = []
 			instance_eval(&block) if block
 		end

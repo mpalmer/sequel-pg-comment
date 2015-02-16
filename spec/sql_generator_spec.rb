@@ -4,8 +4,8 @@ require 'sequel'
 require 'sequel/extensions/pg_comment'
 
 describe "SqlGenerator" do
-	SqlGenerator = Sequel::Extension::PgComment::SqlGenerator
-	PrefixSqlGenerator = Sequel::Extension::PgComment::PrefixSqlGenerator
+	SqlGenerator = Sequel::Postgres::Comment::SqlGenerator
+	PrefixSqlGenerator = Sequel::Postgres::Comment::PrefixSqlGenerator
 
 	context "a simple type expressed as a string" do
 		let(:generator) { SqlGenerator.create("TABLE", :foo, "Ohai!") }

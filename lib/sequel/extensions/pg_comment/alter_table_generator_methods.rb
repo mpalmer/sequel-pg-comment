@@ -11,10 +11,10 @@
 # *should* accept a `:comment` option, and set a comment in the database.  If
 # you find one that doesn't, please file a bug.
 #
-module Sequel::Extension::PgComment::AlterTableGeneratorMethods
+module Sequel::Postgres::Comment::AlterTableGeneratorMethods
 	attr_reader :comments
 
-	include Sequel::Extension::PgComment
+	include Sequel::Postgres::Comment
 
 	# Enhanced version of the `add_column` schema modification method,
 	# which supports setting a comment on the column.

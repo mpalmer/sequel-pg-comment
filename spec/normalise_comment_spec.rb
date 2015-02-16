@@ -2,9 +2,9 @@ require_relative 'spec_helper'
 require 'sequel'
 require 'sequel/extensions/pg_comment'
 
-context "Sequel::Extension::PgComment.normalise_comment" do
+context "Sequel::Postgres::Comment.normalise_comment" do
 	def nc(s)
-		Sequel::Extension::PgComment.normalise_comment(s)
+		Sequel::Postgres::Comment.normalise_comment(s)
 	end
 
 	it "does nothing to a string with no leading whitespace" do

@@ -1,9 +1,9 @@
-module Sequel::Extension; end  #:nodoc:
+module Sequel::Postgres; end  #:nodoc:
 
 # PostgreSQL-specific extension to set and retrieve comments on
 # all database objects.
 # 
-module Sequel::Extension::PgComment
+module Sequel::Postgres::Comment
 	# Strip indenting whitespace from a comment string.
 	#
 	# Two rules are applied by this method:
@@ -68,6 +68,6 @@ require_relative 'pg_comment/create_table_generator_methods'
 require_relative 'pg_comment/alter_table_generator_methods'
 
 Sequel::Database.register_extension(:pg_comment) do |db|
-	db.extend Sequel::Extension::PgComment::DatabaseMethods
-	db.extend_datasets Sequel::Extension::PgComment::DatasetMethods
+	db.extend Sequel::Postgres::Comment::DatabaseMethods
+	db.extend_datasets Sequel::Postgres::Comment::DatasetMethods
 end

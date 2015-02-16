@@ -1,4 +1,4 @@
-module Sequel::Extension::PgComment
+module Sequel::Postgres::Comment
 	#:nodoc:
 	# Generate SQL to set a comment.
 	#
