@@ -180,7 +180,7 @@ describe "schema creation" do
 			db.create_table :foo do
 				constraint nil, :num => 1..5, :comment => "Kaboom"
 			end
-		end.to raise_error(/not supported/i)
+		end.to raise_error(Sequel::Error, /not supported/i)
 	end
 
 	it "blows up trying to comment on a check" do
@@ -188,6 +188,6 @@ describe "schema creation" do
 			db.create_table :foo do
 				check(:comment => "Kaboom") { char_length(name) > 2 }
 			end
-		end.to raise_error(/not supported/i)
+		end.to raise_error(Sequel::Error, /not supported/i)
 	end
 end

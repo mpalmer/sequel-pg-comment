@@ -151,7 +151,7 @@ module Sequel::Postgres::Comment::CreateTableGeneratorMethods
 			if name
 				comments << SqlGenerator.create(:constraint, name, opts[:comment])
 			else
-				raise RuntimeError,
+				raise Sequel::Error,
 				      "Setting comments on unnamed or check constraints is not supported"
 			end
 		end

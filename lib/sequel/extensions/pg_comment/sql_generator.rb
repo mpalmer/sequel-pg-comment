@@ -57,7 +57,7 @@ module Sequel::Postgres::Comment
 		#
 		# @return [SqlGenerator] Some sort of `SqlGenerator` object, or a subclass.
 		#
-		# @raise [ArgumentError] if you passed in an `object_type` that we don't
+		# @raise [Sequel::Error] if you passed in an `object_type` that we don't
 		#   know about.
 		#
 		def self.create(object_type, object_name, comment)
@@ -67,7 +67,7 @@ module Sequel::Postgres::Comment
 				end
 			end
 
-			raise ArgumentError,
+			raise Sequel::Error,
 			      "Unrecognised object type #{object_type.inspect}"
 		end
 
@@ -187,7 +187,7 @@ module Sequel::Postgres::Comment
 		#
 		def generate
 			if table_name.nil?
-				raise ArgumentError,
+				raise Sequel::Error,
 				      "Cannot generate SQL for #{object_type} #{object_name} " +
 				        "without a table_name"
 			end
@@ -238,7 +238,7 @@ module Sequel::Postgres::Comment
 		#
 		def generate
 			if table_name.nil?
-				raise ArgumentError,
+				raise Sequel::Error,
 				      "Cannot generate SQL for #{object_type} #{object_name} " +
 				        "without a table_name"
 			end

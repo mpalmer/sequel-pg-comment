@@ -60,7 +60,7 @@ describe "SqlGenerator" do
 	it "explodes if an invalid object type is given" do
 		expect do
 			SqlGenerator.create(:foobooblee, :foo, "O'hai!")
-		end.to raise_error(ArgumentError, /unrecognised object type/i)
+		end.to raise_error(Sequel::Error, /unrecognised object type/i)
 	end
 
 	it "sets a column comment correctly" do

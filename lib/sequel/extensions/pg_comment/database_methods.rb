@@ -26,7 +26,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 		gen = begin
 			Sequel::Postgres::Comment::SqlGenerator.create(type, id, comment)
 		rescue ArgumentError
-			raise ArgumentError,
+			raise Sequel::Error,
 					"Invalid object type: #{type.inspect}"
 		end
 

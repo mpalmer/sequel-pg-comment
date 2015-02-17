@@ -39,7 +39,7 @@ describe "#comment_on" do
 	it "explodes if an invalid object type is given" do
 		expect do
 			db.comment_on(:foobooblee, :foo, "O'hai!")
-		end.to raise_error(ArgumentError, /invalid object type/i)
+		end.to raise_error(Sequel::Error, /unrecognised object type/i)
 	end
 
 	it "quotes the object name" do
