@@ -12,8 +12,8 @@ describe "#comment_on" do
 		  to eq(["COMMENT ON TABLE \"foo\" IS 'Ohai!'"])
 	end
 
-	it "accepts a string as object type" do
-		db.comment_on("table", :foo, "Ohai!")
+	it "accepts a symbol as object name" do
+		db.comment_on(:table, :foo, "Ohai!")
 		expect(db.sqls).
 		  to eq(["COMMENT ON TABLE \"foo\" IS 'Ohai!'"])
 	end
@@ -39,7 +39,19 @@ describe "#comment_on" do
 	it "explodes if an invalid object type is given" do
 		expect do
 			db.comment_on(:foobooblee, :foo, "O'hai!")
-		end.to raise_error(Sequel::Error, /unrecognised object type/i)
+		end.to raise_error(Sequel::Error)
+	end
+
+	it "explodes if an invalid ID type is given for a table" do
+		expect do
+			db.comment_on(:table, [:foo, :bar], "Ohai!")
+		end.to raise_error(Sequel::Error)
+	end
+
+	it "explodes if an invalid ID type is given for a column" do
+		expect do
+			db.comment_on(:column, :foo, "Ohai!")
+		end.to raise_error(Sequel::Error)
 	end
 
 	it "quotes the object name" do
@@ -49,8 +61,14 @@ describe "#comment_on" do
 	end
 
 	it "sets a column comment correctly" do
-		db.comment_on(:column, :foo__bar_id, "Ohai, column!")
+		db.comment_on(:column, [:foo, :bar_id], "Ohai, column!")
 		expect(db.sqls).
 		  to eq(["COMMENT ON COLUMN \"foo\".\"bar_id\" IS 'Ohai, column!'"])
+	end
+
+	it "sets a trigger comment correctly" do
+		db.comment_on(:trigger, [:foo, :bar_id], "Whoa there, trigger!")
+		expect(db.sqls).
+		  to eq(["COMMENT ON TRIGGER \"bar_id\" ON \"foo\" IS 'Whoa there, trigger!'"])
 	end
 end

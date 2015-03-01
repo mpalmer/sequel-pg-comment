@@ -43,17 +43,6 @@ describe "schema creation" do
 		  to eq("COMMENT ON COLUMN \"foo\".\"id\" IS 'I am unique'")
 	end
 
-	it "sets a primary key comment on a custom constraint name" do
-		db.create_table :foo do
-			primary_key :id,
-			            :comment => "I am unique",
-			            :name => :custom_pk
-		end
-
-		expect(db.sqls.last).
-		  to eq("COMMENT ON COLUMN \"foo\".\"id\" IS 'I am unique'")
-	end
-
 	it "sets a composite primary key comment" do
 		db.create_table :foo do
 			primary_key [:bar, :baz],
@@ -90,7 +79,7 @@ describe "schema creation" do
 		end
 		
 		expect(db.sqls.last).
-		  to eq("COMMENT ON CONSTRAINT \"bar_bar_name_fkey\" ON \"foo\" IS 'Over there!'")
+		  to eq("COMMENT ON CONSTRAINT \"foo_bar_name_fkey\" ON \"foo\" IS 'Over there!'")
 	end
 
 	it "sets a composite foreign_key comment with custom name" do
@@ -168,19 +157,11 @@ describe "schema creation" do
 
 	it "sets a constraint comment" do
 		db.create_table :foo do
-			constraint :clamp, :num => 1..5, :comment => "Toight"
+			constraint({ :name => :clamp, :comment => "Toight" }, :num => 1..5)
 		end
 
 		expect(db.sqls.last).
 		  to eq("COMMENT ON CONSTRAINT \"clamp\" ON \"foo\" IS 'Toight'")
-	end
-
-	it "blows up trying to an unnamed constraint comment" do
-		expect do
-			db.create_table :foo do
-				constraint nil, :num => 1..5, :comment => "Kaboom"
-			end
-		end.to raise_error(Sequel::Error, /not supported/i)
 	end
 
 	it "blows up trying to comment on a check" do

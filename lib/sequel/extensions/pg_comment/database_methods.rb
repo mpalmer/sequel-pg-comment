@@ -2,41 +2,50 @@
 # in a PostgreSQL database.
 #
 module Sequel::Postgres::Comment::DatabaseMethods
-	# Set the comment for a database object.
+	# @param type [Symbol] The object type you're looking to set the comment
+	#   on.  This is just the PostgreSQL type name, lowercased, with spaces
+	#   replaced with underscores.
 	#
-	# @param type [#to_s] The type of object that you wish to comment on.
-	#   This can either be a string or symbol.  Any object type that PgSQL
-	#   knows about should be fair game.  The current list of object types
-	#   that this plugin knows about (and hence will accept) is listed in
-	#   the {Sequel::Postgres::Comment::OBJECT_TYPES} array.
+	# @param id [Symbol, String, Array<Symbol, String>] The identifier of the
+	#   object that you wish to comment on.  For most types of object, this
+	#   should be the literal name of the object.  However, for objects which
+	#   are "contained" in another object (columns in tables/views, and
+	#   constraints, triggers, and rules in tables) you must pass the
+	#   identifier as a two-element array, where the first element is the
+	#   container table or view, and the second element is the contained
+	#   object (column, constraint, rule, or trigger).
 	#
-	# @param id [#to_s] The name of the object that you wish to comment on.
-	#   For most types of object, this should be the literal name of the
-	#   object.  However, for columns in a table or view, you should separate
-	#   the table/view name from the column name with a double underscore
-	#   (ie `__`).  This is the standard Sequel convention for such things.
+	#   In any event, when a `Symbol` is encountered, it is quoted for
+	#   safety, and split into a schema and object name pair, if appropriate.
+	#   If a `String` is passed, then **no escaping or quoting is done**.
+	#   While this is a slight risk, it is necessary to allow you to
+	#   reference complex object names which can't reasonably be described
+	#   otherwise (`FUNCTION`, I'm looking at you).
 	#
 	# @param comment [String] The comment you wish to set for the database
 	#   object.
+	#
+	# @raise [Sequel::Error] if the specified `type` isn't recognised.
 	#
 	# @see {Sequel::Postgres::Comment.normalise_comment} for details on
 	#   how the comment string is interpreted.
 	#
 	def comment_on(type, id, comment)
-		gen = begin
-			Sequel::Postgres::Comment::SqlGenerator.create(type, id, comment)
-		rescue ArgumentError
+		if Sequel::Postgres::Comment::STANDALONE_TYPES.include?(type)
+			comment_on_standalone_type(type, id, comment)
+		elsif Sequel::Postgres::Comment::CONTAINED_TYPES.include?(type)
+			comment_on_contained_type(type, id, comment)
+		else
 			raise Sequel::Error,
-					"Invalid object type: #{type.inspect}"
+			      "Unknown object type: #{type.inspect}"
 		end
-
-		run(gen.generate)
 	end
+
 
 	# Retrieve the comment for a database object.
 	#
 	# @param object [#to_s] The name of the database object to retrieve.  For
-	#   most objects, this should be the literal name of the object. 
+	#   most objects, this should be the literal name of the object.
 	#   However, for columns on tables and views, the name of the table/view
 	#   should be a separated from the name of the column by a double
 	#   underscore (ie `__`).
@@ -83,51 +92,47 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	end
 
 	#:nodoc:
-	# Enhanced version to support setting comments on objects created in a
-	# block-form `create_table` statement.
+	# Enhanced to support creating comments on columns, after the table
+	# itself (and hence all its columns) have been created.
 	#
-	def create_table_generator(&block)
-		super do
-			extend Sequel::Postgres::Comment::CreateTableGeneratorMethods
-			@comments = []
-			instance_eval(&block) if block
+	def create_table_from_generator(name, generator, options)
+		generator.columns.each do |col|
+			if col[:comment]
+				comment_on(:column, [name, col[:name]], col[:comment])
+			end
+		end
+
+		generator.constraints.each do |c|
+			case c[:type]
+			when :primary_key
+				c_name = c[:name] || "#{name}_pkey".to_sym
+				comment_on(:index, c_name, c[:comment])
+			when :foreign_key, :check
+				if c[:type] == :check && c[:name].nil?
+					raise Sequel::Error,
+					      "Setting comments on unnamed check constraints is not supported"
+				end
+				c_name = c[:name] || "#{name}_#{c[:columns].first}_fkey".to_sym
+				comment_on(:constraint, [name, c_name], c[:comment])
+			when :unique
+				c_name = c[:name] || ([name] + c[:columns] + ["key"]).join("_").to_sym
+				comment_on(:index, c_name, c[:comment])
+			end
 		end
 	end
 
 	#:nodoc:
-	# Enhanced version to support setting comments on objects created in a
-	# block-form `create_table` statement.
-	#
-	# If you're wondering why we override the
-	# create_table_indexes_from_generator method, rather than
-	# create_table_from_generator, it's because the indexes method runs last,
-	# and we can only create our comments after the objects we're commenting
-	# on have been created.  We *could* set some comments in
-	# create_table_from_generator, and then set index comments in
-	# create_table_indexes_from_generator, but why override two methods when
-	# you can just override one to get the same net result?
+	# Enhanced to support creating comments on indexes, after the indexes
+	# themselves have been created.
 	#
 	def create_table_indexes_from_generator(name, generator, options)
 		super
 
-		generator.comments.each do |sql_gen|
-			if sql_gen.respond_to? :table_name
-				sql_gen.table_name = name
+		generator.indexes.each do |idx|
+			if idx[:comment]
+				i_name = idx[:name] || ([name] + idx[:columns] + ["index"]).join("_").to_sym
+				comment_on(:index, i_name, idx[:comment])
 			end
-
-			run(sql_gen.generate)
-		end
-	end
-
-	#:nodoc:
-	# Enhanced version to support setting comments on objects created in a
-	# block-form `alter_table` statement.
-	#
-	def alter_table_generator(&block)
-		super do
-			extend Sequel::Postgres::Comment::AlterTableGeneratorMethods
-			@comments = []
-			instance_eval(&block) if block
 		end
 	end
 
@@ -138,12 +143,30 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	def apply_alter_table_generator(name, generator)
 		super
 
-		generator.comments.each do |sql_gen|
-			if sql_gen.respond_to?(:table_name=)
-				sql_gen.table_name = name
-			end
+		schema, table = schema_and_table(name)
+		fqtable = [schema, table].compact.map { |e| literal e.to_sym }.join('.')
 
-			run(sql_gen.generate)
+		generator.operations.each do |op|
+			if op[:comment]
+				case op[:op]
+				when :add_column
+					comment_on(:column, [name, op[:name]], op[:comment])
+				when :add_constraint
+					case op[:type]
+					when :primary_key
+						comment_on(:index, "#{name}_pkey".to_sym, op[:comment])
+					when :foreign_key, :check
+						c_name = op[:name] || "#{name}_#{op[:columns].first}_fkey".to_sym
+						comment_on(:constraint, [name, c_name], op[:comment])
+					when :unique
+						c_name = op[:name] || ([name] + op[:columns] + ["key"]).join("_").to_sym
+						comment_on(:index, c_name, op[:comment])
+					end
+				when :add_index
+					c_name = op[:name] || ([name] + op[:columns] + ["index"]).join("_").to_sym
+					comment_on(:index, c_name, op[:comment])
+				end
+			end
 		end
 	end
 
@@ -165,16 +188,41 @@ module Sequel::Postgres::Comment::DatabaseMethods
 
 	private
 
-	# Quote an object name, handling the double underscore convention
-	# for separating a column name from its containing object.
-	#
-	def quote_comment_identifier(id)
-		id = id.to_s
-		if id.index("__")
-			tbl, col = id.split("__", 2)
-			quote_identifier(tbl) + "." + quote_identifier(col)
+	def comment_on_standalone_type(type, id, comment)
+		run "COMMENT ON #{type.to_s.gsub("_", " ").upcase} #{quoted_schema_and_table id} IS #{literal comment}"
+	end
+
+	def comment_on_contained_type(type, id, comment)
+		unless id.is_a?(Array) and id.length == 2
+			raise Sequel::Error,
+			      "Invalid ID for #{type.inspect}: must be a two-element array"
+		end
+
+		fqtable = quoted_schema_and_table(id[0])
+		fqname  = if id[1].is_a?(Symbol)
+			quote_identifier id[1]
+		elsif id[1].is_a?(String)
+			id[1]
 		else
-			quote_identifier(id)
+			raise Sequel::Error,
+			      "Invalid type for object ID: must be a Symbol or String"
+		end
+
+		if type == :column
+			run "COMMENT ON COLUMN #{fqtable}.#{fqname} IS #{literal comment}"
+		else
+			run "COMMENT ON #{type.to_s.gsub("_", " ").upcase} #{fqname} ON #{fqtable} IS #{literal comment}"
+		end
+	end
+
+	def quoted_schema_and_table(id)
+		if id.is_a?(Symbol)
+			schema_and_table(id).compact.map { |e| quote_identifier e }.join(".")
+		elsif id.is_a?(String)
+			id
+		else
+			raise Sequel::Error,
+			      "Invalid type for ID: #{id.inspect} (must by symbol or string)"
 		end
 	end
 end

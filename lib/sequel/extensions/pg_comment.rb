@@ -2,8 +2,51 @@ module Sequel::Postgres; end  #:nodoc:
 
 # PostgreSQL-specific extension to set and retrieve comments on
 # all database objects.
-# 
+#
 module Sequel::Postgres::Comment
+	# The types of PostgreSQL object that are commented on in their own
+	# right.
+	STANDALONE_TYPES = [
+		:aggregate,
+		:cast,
+		:collation,
+		:conversion,
+		:database,
+		:domain,
+		:extension,
+		:event_trigger,
+		:foreign_data_wrapper,
+		:foreign_table,
+		:function,
+		:index,
+		:large_object,
+		:materialized_view,
+		:operator,
+		:operator_class,
+		:operator_family,
+		:language,
+		:procedural_language,
+		:role,
+		:schema,
+		:sequence,
+		:server,
+		:table,
+		:tablespace,
+		:text_search_configuration,
+		:text_search_dictionary,
+		:text_search_parser,
+		:text_search_template,
+		:type,
+		:view
+	]
+
+	CONTAINED_TYPES = [
+		:column,
+		:constraint,
+		:rule,
+		:trigger
+	]
+
 	# Strip indenting whitespace from a comment string.
 	#
 	# Two rules are applied by this method:
@@ -49,7 +92,7 @@ module Sequel::Postgres::Comment
 	# @param comment [String] The comment to mangle for whitespace.
 	#
 	# @return [String] The normalised comment, with whitespace removed.
-	#      
+	#
 	def self.normalise_comment(comment)
 		comment.tap do |s|
 			s.gsub!(/\A\n+/, '')
@@ -61,11 +104,8 @@ module Sequel::Postgres::Comment
 	end
 end
 
-require_relative 'pg_comment/sql_generator'
 require_relative 'pg_comment/database_methods'
 require_relative 'pg_comment/dataset_methods'
-require_relative 'pg_comment/create_table_generator_methods'
-require_relative 'pg_comment/alter_table_generator_methods'
 
 Sequel::Database.register_extension(:pg_comment) do |db|
 	db.extend Sequel::Postgres::Comment::DatabaseMethods

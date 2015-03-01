@@ -38,14 +38,6 @@ describe "schema modification" do
 		  to eq("COMMENT ON COLUMN \"foo\".\"bar_id\" IS 'Over there!'")
 	end
 
-	it "sets a column comment on add_foreign_key with custom constraint name" do
-		db.alter_table :foo do
-			add_foreign_key :bar_id, :bar, :comment => "Over there!", :name => :fkr
-		end
-		expect(db.sqls.last).
-		  to eq("COMMENT ON COLUMN \"foo\".\"bar_id\" IS 'Over there!'")
-	end
-
 	it "sets a constraint comment on composite add_foreign_key" do
 		db.alter_table :foo do
 			add_foreign_key [:name, :dob], :bar, :comment => "Over there!"
@@ -96,7 +88,7 @@ describe "schema modification" do
 
 	it "sets a constraint comment" do
 		db.alter_table :foo do
-			add_constraint(:min_length, :comment => "Bigger is better!") do
+			add_constraint(:name => :min_length, :comment => "Bigger is better!") do
 				char_length(name) > 2
 			end
 		end
