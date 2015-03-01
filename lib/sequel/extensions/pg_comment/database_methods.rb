@@ -217,7 +217,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 
 	def quoted_schema_and_table(id)
 		if id.is_a?(Symbol)
-			schema_and_table(id).compact.map { |e| quote_identifier e }.join(".")
+			literal id
 		elsif id.is_a?(String)
 			id
 		else
