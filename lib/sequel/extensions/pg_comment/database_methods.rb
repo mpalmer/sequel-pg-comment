@@ -96,6 +96,8 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	# itself (and hence all its columns) have been created.
 	#
 	def create_table_from_generator(name, generator, options)
+		super
+
 		generator.columns.each do |col|
 			if col[:comment]
 				comment_on(:column, [name, col[:name]], col[:comment])
