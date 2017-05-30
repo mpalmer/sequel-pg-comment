@@ -1,10 +1,12 @@
-require 'git-version-bump'
+$:.push File.expand_path("../lib", __FILE__)
+require 'sequel/extensions/pg_comment/version'
+require 'date'
 
 Gem::Specification.new do |s|
 	s.name = "sequel-pg-comment"
 
-	s.version = GVB.version
-	s.date    = GVB.date
+	s.version = Sequel::Postgres::Comment::VERSION
+	s.date    = '2017-05-30'
 
 	s.platform = Gem::Platform::RUBY
 
