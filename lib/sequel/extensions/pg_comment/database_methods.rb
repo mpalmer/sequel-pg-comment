@@ -108,17 +108,17 @@ module Sequel::Postgres::Comment::DatabaseMethods
 			case c[:type]
 			when :primary_key
 				c_name = c[:name] || "#{name}_pkey".to_sym
-				comment_on(:index, c_name, c[:comment])
+				comment_on(:index, c_name, c[:comment]) if c[:comment]
 			when :foreign_key, :check
 				if c[:type] == :check && c[:name].nil?
 					raise Sequel::Error,
 					      "Setting comments on unnamed check constraints is not supported"
 				end
 				c_name = c[:name] || "#{name}_#{c[:columns].first}_fkey".to_sym
-				comment_on(:constraint, [name, c_name], c[:comment])
+				comment_on(:constraint, [name, c_name], c[:comment]) if c[:comment]
 			when :unique
 				c_name = c[:name] || ([name] + c[:columns] + ["key"]).join("_").to_sym
-				comment_on(:index, c_name, c[:comment])
+				comment_on(:index, c_name, c[:comment]) if c[:comment]
 			end
 		end
 	end
