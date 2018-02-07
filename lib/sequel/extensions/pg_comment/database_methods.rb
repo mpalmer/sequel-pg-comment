@@ -222,6 +222,8 @@ module Sequel::Postgres::Comment::DatabaseMethods
 			literal id
 		elsif id.is_a?(String)
 			id
+		elsif id.is_a?(Sequel::SQL::QualifiedIdentifier) or id.is_a?(Sequel::SQL::Identifier)
+			quote_schema_table id
 		else
 			raise Sequel::Error,
 			      "Invalid type for ID: #{id.inspect} (must by symbol or string)"
