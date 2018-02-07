@@ -59,11 +59,11 @@ module Sequel::Postgres::Comment::DatabaseMethods
 		if object.index("__")
 			tbl, col = object.split("__", 2)
 
-			(select(Sequel.function(:col_description, :c__oid, :a__attnum).as(:comment)).
+			(select(Sequel.function(:col_description, Sequel[:c][:oid], Sequel[:a][:attnum]).as(:comment)).
 			   from(Sequel.as(:pg_class, :c)).
-			   join(Sequel.as(:pg_attribute, :a), :c__oid => :a__attrelid).
-			   where(:c__relname => tbl).
-			   and(:a__attname => col).first || {})[:comment]
+			   join(Sequel.as(:pg_attribute, :a), Sequel[:c][:oid] => Sequel[:a][:attrelid]).
+			   where(Sequel[:c][:relname] => tbl).
+			   where(Sequel[:a][:attname] => col).first || {})[:comment]
 		else
 			(select(
 			   Sequel.function(
@@ -222,6 +222,8 @@ module Sequel::Postgres::Comment::DatabaseMethods
 			literal id
 		elsif id.is_a?(String)
 			id
+		elsif id.is_a?(Sequel::SQL::QualifiedIdentifier) or id.is_a?(Sequel::SQL::Identifier)
+			quote_schema_table id
 		else
 			raise Sequel::Error,
 			      "Invalid type for ID: #{id.inspect} (must by symbol or string)"
