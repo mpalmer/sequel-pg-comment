@@ -61,8 +61,9 @@ module Sequel::Postgres::Comment
 	#
 	# This means you can use heredocs and multi-line strings without having
 	# to play your own silly-buggers in order to not make the comments look
-	# like arse.  If you like heredocs, you're encouraged to use this style:
+	# like arse.  If you like heredocs, you're encouraged to use that style.
 	#
+	# @example Heredoc-style works
 	#    comment_for :table, :foo, <<-EOF
 	#      This is my comment.
 	#
@@ -70,8 +71,9 @@ module Sequel::Postgres::Comment
 	#    EOF
 	#
 	# On the other hand, if percent-quotes are more your cup of tea, you can
-	# go at them like this:
+	# use those.
 	#
+	# @example Percent-quote style works
 	#    comment_for :table, :foo, %(
 	#      This is my comment.
 	#
@@ -81,8 +83,9 @@ module Sequel::Postgres::Comment
 	# Be sure to not start the first line of your comment on the same line as
 	# the quote character, though, because that will mean the first line of
 	# the comment *doesn't* have any leading whitespace, and so whitespace
-	# won't be trimmed from the rest of the comment.  So, don't do this:
+	# won't be trimmed from the rest of the comment.  So, don't do that.
 	#
+	# @example This will not work
 	#    comment_for :table, :foo, %(This won't work at all well.
 	#      Since the first line of text doesn't have leading whitespace,
 	#      these lines won't have it stripped either, and everything will
