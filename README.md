@@ -25,26 +25,32 @@ That's what this gem is all about.
 
 First, you need to enable the plugin:
 
-    Sequel::Database.extension :pg_comment
+```ruby
+Sequel::Database.extension :pg_comment
+```
 
 Then, you can attach a comment to anything you can create with [Sequel
 schema
 modifications](http://sequel.jeremyevans.net/rdoc/files/doc/schema_modification_rdoc.html)
 by adding a `:comment` option, like so:
 
-    create_table :comments, :comment => "Foo to you too" do
-      primary_key :id, :comment => "Auto-incrementing primary key"
-      String :data, :null => false, :comment => "Markdown"
-      foreign_key :user_id, :users, :comment => "The user who owns the comment"
+```ruby
+create_table :comments, :comment => "Foo to you too" do
+    primary_key :id, :comment => "Auto-incrementing primary key"
+    String :data, :null => false, :comment => "Markdown"
+    foreign_key :user_id, :users, :comment => "The user who owns the comment"
 
-      index :user_id, :comment => "Find those user comments faster!"
-    end
+    index :user_id, :comment => "Find those user comments faster!"
+end
+```
 
 For some object types, though, there's no syntactic sugar in Sequel, so
 you've got to create them by hand.  Never fear, though!  You can comment on
 any object using Ruby code, like so:
 
-    comment_on :collation, :my_collation, "Collate ALL THE THINGS!"
+```ruby
+comment_on :collation, :my_collation, "Collate ALL THE THINGS!"
+```
 
 This is useful also for tables, where you might not want to insert a lengthy
 comment in the top of your `create_table` block.
@@ -53,26 +59,31 @@ The `table.column` syntax that PgSQL requires for `COMMENT ON COLUMN` can be
 simulated in the usual Sequel fashion, of using two underscores in the
 symbol to separate the table name from the column name, like so:
 
-    comment_on :column, :foo__bar_id, %{
-      This is my column.  There are many like it, but this one is mine.
-    }
-    #  => COMMENT ON COLUMN "foo"."bar_id" IS 'This is my column. (etc)'
+```ruby
+comment_on :column, :foo__bar_id, %{
+    This is my column.  There are many like it, but this one is mine.
+}
+#  => COMMENT ON COLUMN "foo"."bar_id" IS 'This is my column. (etc)'
+```
 
 **NOTE**: The object you wish to comment on *must already exist* before you
 call `comment_on`.  The following example **WILL NOT WORK**:
 
-    comment_on :table, :foo, "This is an awesomely foo table"
-    create_table :foo, do
-      # ...
-    end
+```ruby
+comment_on :table, :foo, "This is an awesomely foo table"
+create_table :foo, do
+  # ...
+end
+```
 
 You have to put the `comment_on` *after* the `create_table`, like this:
 
-    create_table :foo, do
-      # ...
-    end
-    comment_on :table, :foo, "This is an awesomely foo table"
-
+```ruby
+create_table :foo, do
+  # ...
+end
+comment_on :table, :foo, "This is an awesomely foo table"
+```
 
 ## Comment string tidy-up
 
@@ -91,38 +102,44 @@ and that is to strip out leading whitespace.  The rules are very simple:
 That means you can use a heredoc for your multi-line comments, and they'll
 still look neat and tidy without having to play `gsub` tricks:
 
-    create_table :foo do
-      String :data, :comment => <<-EOF
-        This is a very lengthy comment.  It goes for many lines
-        and has a great deal to say on any number of subjects.  I
-        could have used lorem ipsum here, but I prefer to do things
-        the old-fashioned way.  If you've read all of this example,
-        you probably stay to read the whole of the credits at the
-        cinema.  Good for you!  I do too.  Wave next time, you
-        anti-social loner.
-      EOF
-    end
+```ruby
+create_table :foo do
+  String :data, :comment => <<-EOF
+    This is a very lengthy comment.  It goes for many lines
+    and has a great deal to say on any number of subjects.  I
+    could have used lorem ipsum here, but I prefer to do things
+    the old-fashioned way.  If you've read all of this example,
+    you probably stay to read the whole of the credits at the
+    cinema.  Good for you!  I do too.  Wave next time, you
+    anti-social loner.
+  EOF
+end
+```
 
 One caveat: it's common to use the `%( ... )` quoting style for lengthy
 strings.  That's fine, but make sure to put the first line of docs on its
 own line, and not directly after the `%(`.  For example, this will not work
 so well:
 
-    # This WILL NOT trim leading whitespace from each line
-    comment_on :table, :foo, %(This is a long comment.
-      However, due to the way that pg-comment trims whitespace,
-      these lines will have leading indents, because the first line
-      didn't.
-    )
+```ruby
+# This WILL NOT trim leading whitespace from each line
+comment_on :table, :foo, %(This is a long comment.
+  However, due to the way that pg-comment trims whitespace,
+  these lines will have leading indents, because the first line
+  didn't.
+)
+```
 
 Instead, you'll want to do this:
 
-    # This WILL trim leading whitespace from each line
-    comment_on :table, :foo, %(
-      This, too, is a long comment.  Because the first non-empty
-      line had leading spaces, all of these other lines will have
-      their leaving spaces stripped too.
-    )
+```ruby
+# This WILL trim leading whitespace from each line
+comment_on :table, :foo, %(
+  This, too, is a long comment.  Because the first non-empty
+  line had leading spaces, all of these other lines will have
+  their leaving spaces stripped too.
+)
+```
 
 As always, inconsistent use of tabs and spaces will end in disaster.  So
 don't do that.  Remember: tabs are for indenting, spaces are for formatting.
@@ -178,15 +195,21 @@ It's great that this gem can help you to document your database, but that's
 not much use if nobody can read them again.  Within Sequel itself, you can
 retrieve comments quite easily:
 
-    DB.comment_for(:foo)  # => "Something something dark side"
+```ruby
+DB.comment_for(:foo)  # => "Something something dark side"
+```
 
 For columns, you can either use the double underscore notation:
 
-    DB.comment_for(:foo__column)  # => "Awwwwww yeah"
+```ruby
+DB.comment_for(:foo__column)  # => "Awwwwww yeah"
+```
 
 Or you can do the same thing from the dataset itself:
 
-    DB[:foo].comment_for(:column)  # => "Awwwwww yeah"
+```ruby
+DB[:foo].comment_for(:column)  # => "Awwwwww yeah"
+```
 
 There's currently no support for retrieving a database comment from a Sequel
 model; pull requests implementing such a feature would be warmly welcomed.

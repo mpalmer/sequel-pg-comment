@@ -95,6 +95,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	# Enhanced to support creating comments on columns, after the table
 	# itself (and hence all its columns) have been created.
 	#
+	# @private
 	def create_table_from_generator(name, generator, options)
 		super
 
@@ -127,6 +128,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	# Enhanced to support creating comments on indexes, after the indexes
 	# themselves have been created.
 	#
+	# @private
 	def create_table_indexes_from_generator(name, generator, options)
 		super
 
@@ -142,6 +144,7 @@ module Sequel::Postgres::Comment::DatabaseMethods
 	# Enhanced version to support setting comments on objects created in a
 	# block-form `alter_table` statement.
 	#
+	# @private
 	def apply_alter_table_generator(name, generator)
 		super
 

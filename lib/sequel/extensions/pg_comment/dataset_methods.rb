@@ -1,11 +1,10 @@
 # Support for retrieving column comments from a PostgreSQL database
-# via a dataset.  For example:
+# via a dataset.
 #
-#    DB[:foo_tbl].comment_for(:some_column)
-#
-# Will retrieve the comment for `foo_tbl.some_column`, if such a
-# column exists.
-#
+# @example Retrieve the comment for `foo_tbl.some_column`
+#    DB[:foo_tbl].comment_for(:some_column) # => 'the comment for that column'
+# @example Retrieve the comment for a non-existent column
+#    DB[:foo_tbl].comment_for(:not_a_column) # => nil
 module Sequel::Postgres::Comment::DatasetMethods
 	# Retrieve the comment for the column named `col` in the "primary" table
 	# for this dataset.
