@@ -232,10 +232,10 @@ end
 # support reversible comment_on statements if the migration extension is loaded
 # Inspired by https://github.com/jeremyevans/sequel/blob/c24909f5182d633673c9e8d78813c24f0a4bbb88/lib/sequel/extensions/pg_enum.rb#L185-L197
 if defined?(Sequel::MigrationReverser)
-  class Sequel::MigrationReverser
-    private
-    def comment_on(*args)
-      @actions << [:comment_on, *args[0...-1], nil]
-    end
-  end
+	class Sequel::MigrationReverser
+		private
+		def comment_on(*args)
+			@actions << [:comment_on, *args[0...-1], nil]
+		end
+	end
 end
