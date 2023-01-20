@@ -15,6 +15,24 @@ describe "schema creation" do
 		  to eq("COMMENT ON TABLE \"foo\" IS 'Ohai!'")
 	end
 
+	it "sets a schema table comment" do
+		db.create_table Sequel[:bar][:foo], comment: "Ohai!" do
+			String :data
+		end
+
+		expect(db.sqls.last).
+			to eq("COMMENT ON TABLE \"bar\".\"foo\" IS 'Ohai!'")
+	end
+
+	it 'sets a table comment where class of table name is Sequel::SQL::Identifier' do
+		db.create_table Sequel[:foo], comment: "Ohai!" do
+			String :data
+		end
+
+		expect(db.sqls.last).
+			to eq("COMMENT ON TABLE \"foo\" IS 'Ohai!'")
+	end
+
 	it "sets a column comment" do
 		db.create_table :foo do
 			String :data, :comment => "Owhatanight"
@@ -68,7 +86,7 @@ describe "schema creation" do
 		db.create_table :foo do
 			foreign_key :bar_id, :bar, :comment => "Over there!"
 		end
-		
+
 		expect(db.sqls.last).
 		  to eq("COMMENT ON COLUMN \"foo\".\"bar_id\" IS 'Over there!'")
 	end
@@ -77,7 +95,7 @@ describe "schema creation" do
 		db.create_table :foo do
 			foreign_key [:bar_name, :bar_dob], :bar, :comment => "Over there!"
 		end
-		
+
 		expect(db.sqls.last).
 		  to eq("COMMENT ON CONSTRAINT \"foo_bar_name_fkey\" ON \"foo\" IS 'Over there!'")
 	end
@@ -89,7 +107,7 @@ describe "schema creation" do
 			            :comment => "Over there!",
 			            :name    => :fkr
 		end
-		
+
 		expect(db.sqls.last).
 		  to eq("COMMENT ON CONSTRAINT \"fkr\" ON \"foo\" IS 'Over there!'")
 	end

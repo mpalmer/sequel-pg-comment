@@ -2,3 +2,9 @@ Gemfile.lock
 /pkg
 /doc
 /.yardoc
+
+# ignore the Ruby Version manager
+.rvmrc
+.ruby-version
+.ruby-gemset
+.rbenv
