@@ -187,7 +187,11 @@ module Sequel::Postgres::Comment::DatabaseMethods
 		super
 
 		if args.last.is_a?(Hash) && args.last[:comment]
-			comment_on(:view, args.first, args.last[:comment])
+			if args.last[:materialized]
+				comment_on(:materialized_view, args.first, args.last[:comment])
+			else
+				comment_on(:view, args.first, args.last[:comment])
+			end
 		end
 	end
 
